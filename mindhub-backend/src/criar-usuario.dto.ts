@@ -1,13 +1,8 @@
 import { z } from 'zod';
-import { nomeSchema } from '../common/schemas.js';
 
 export const criarUsuarioSchema = z.strictObject({
-  nome: nomeSchema,
+  nome: z.string().trim().min(1).max(120),
   email: z.string().trim().toLowerCase().max(254).pipe(z.email()),
 });
+
 export type CriarUsuarioDto = z.infer<typeof criarUsuarioSchema>;
-export interface Usuario extends CriarUsuarioDto {
-  id: string;
-  situacao: 'ATIVO';
-  criadoEm: string;
-}
