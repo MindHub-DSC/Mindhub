@@ -1,9 +1,24 @@
+# Dependências e saídas de build do backend (Node.js / NestJS / Vitest)
 node_modules/
 dist/
 coverage/
 *.tsbuildinfo
 *.log
 tmp/
+
+# Variáveis de ambiente: só o exemplo, sem valores sensíveis, é versionado
 .env
 .env.*
 !.env.example
+
+# Arquivos gerados pelo Windows
+Thumbs.db
+desktop.ini
+
+# Materiais da disciplina (enunciados, roteiros e PDFs do professor).
+# Ficam só na cópia local: não são documentação do sistema.
+/*.pdf
+/atividade-pratica.md
+/01-planejamento-*.md
+/02-automacao-e-configuracao-no-github.md
+/03-organizacao-da-equipe-e-revisao-de-issues-no-github
