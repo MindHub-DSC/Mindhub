@@ -12,6 +12,7 @@ reescritos. Revisões descobertas depois ficam anotadas nos trabalhos seguintes.
 | [trabalho3.md](trabalho3.md) | Da Informação ao Domínio: Construindo o Modelo Conceitual do Sistema | [T3] |
 | [trabalho4.md](trabalho4.md) | Do Domínio às Fronteiras: Organizando a Arquitetura do Sistema | [T4] |
 | [trabalho5.md](trabalho5.md) | Do Caso de Uso ao Primeiro Slice: Blueprint de Implementação | [T5] |
+| [trabalho6.md](trabalho6.md) | Preparação e Governança do Repositório para o Primeiro Slice | [T6] |
 
 Atenção: o título interno de `trabalho2.2.md` diz "Trabalho 3", mas o arquivo é o
 2.2. Vale o nome do arquivo.

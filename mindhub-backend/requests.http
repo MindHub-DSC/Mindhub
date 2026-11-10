@@ -1,0 +1,4 @@
+### Prova de vida do backend NestJS 12 (template Hello World)
+# Porta padrão: 3000 (ou a variável PORT; veja mindhub-backend/.env.example)
+# Resposta esperada: 200 OK, corpo "Hello World!"
+GET http://localhost:3000/
