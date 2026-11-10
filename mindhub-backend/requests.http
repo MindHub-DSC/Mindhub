@@ -1,4 +1,72 @@
-### Prova de vida do backend NestJS 12 (template Hello World)
-# Porta padrão: 3000 (ou a variável PORT; veja mindhub-backend/.env.example)
-# Resposta esperada: 200 OK, corpo "Hello World!"
-GET http://localhost:3000/
+# Requisições do Mindhub para o REST Client (VS Code).
+# Antes: pnpm db:up, pnpm migration:run e pnpm start:dev (veja o README).
+# Execute os blocos de cima para baixo: o passo 1 cria o usuário que os
+# passos seguintes usam. Nenhum UUID é fixo; {{$guid}} gera um novo.
+
+@base = http://localhost:3000
+
+### 0. Prova de vida (template NestJS): 200 "Hello World!"
+GET {{base}}/
+
+### 1. Preparar: cadastrar um usuário (UC01) com email único → 201
+# @name usuario
+POST {{base}}/usuarios
+Content-Type: application/json
+
+{
+  "nome": "Ana Souza",
+  "email": "ana-{{$guid}}@exemplo.test"
+}
+
+### 2. Sucesso: cadastrar o perfil de especialista do usuário (UC02) → 201
+# @name perfil
+POST {{base}}/especialistas
+Content-Type: application/json
+
+{
+  "usuarioId": "{{usuario.response.body.id}}",
+  "descricao": "Consultora de produto com 10 anos em startups de saúde.",
+  "especialidades": ["Gestão de produto", " Discovery ", "Métricas"]
+}
+
+### 3. Falha (domínio): segundo perfil para o mesmo usuário → 409
+POST {{base}}/especialistas
+Content-Type: application/json
+
+{
+  "usuarioId": "{{usuario.response.body.id}}",
+  "descricao": "Tentativa de criar outro perfil.",
+  "especialidades": ["Mentoria"]
+}
+
+### 4. Falha (aplicação): usuário não reconhecido → 422 (D5)
+# {{$guid}} gera um UUID novo, que não pertence a nenhum usuário.
+POST {{base}}/especialistas
+Content-Type: application/json
+
+{
+  "usuarioId": "{{$guid}}",
+  "descricao": "Usuário que não existe.",
+  "especialidades": ["Mentoria"]
+}
+
+### 5. Falha (domínio): especialidades repetidas (D3) → 400
+POST {{base}}/especialistas
+Content-Type: application/json
+
+{
+  "usuarioId": "{{usuario.response.body.id}}",
+  "descricao": "Repetição sem diferenciar maiúsculas.",
+  "especialidades": ["Discovery", "discovery"]
+}
+
+### 6. Falha (entrada): campo não previsto "situacao" → 400 na fronteira
+POST {{base}}/especialistas
+Content-Type: application/json
+
+{
+  "usuarioId": "{{usuario.response.body.id}}",
+  "descricao": "Tentando escolher a situação.",
+  "especialidades": ["Mentoria"],
+  "situacao": "SUSPENSO"
+}
