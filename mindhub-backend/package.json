@@ -1,7 +1,7 @@
 {
   "name": "mindhub-backend",
   "version": "0.0.1",
-  "description": "Backend básico da Mindhub para cadastrar usuários",
+  "description": "Backend da Mindhub: cadastro de usuários (UC01) e de perfis de especialista (UC02) com PostgreSQL",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
@@ -18,14 +18,24 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
     "lint": "oxlint --type-aware src/ test/",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
+    "db:up": "docker compose up -d --wait",
+    "db:stop": "docker compose stop",
+    "migration:generate": "pnpm run build && typeorm migration:generate -d dist/database/data-source.js",
+    "migration:run": "pnpm run build && typeorm migration:run -d dist/database/data-source.js",
+    "migration:revert": "pnpm run build && typeorm migration:revert -d dist/database/data-source.js",
+    "migration:show": "pnpm run build && typeorm migration:show -d dist/database/data-source.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
     "@nestjs/core": "^12.0.1",
     "@nestjs/platform-express": "^12.0.1",
+    "@nestjs/typeorm": "^12.0.3",
+    "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "typeorm": "^1.1.2",
     "zod": "4.6.5"
   },
   "devDependencies": {
