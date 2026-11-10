@@ -1,0 +1,28 @@
+# PostgreSQL do Mindhub para desenvolvimento e testes.
+# A API roda fora do Docker (pnpm start:dev); só o banco fica no container.
+# Variáveis lidas do arquivo .env desta pasta (copie de .env.example).
+name: mindhub
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:?defina DB_USER no .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD no .env}
+      POSTGRES_DB: ${DB_NAME:?defina DB_NAME no .env}
+    ports:
+      # 5433 no host evita conflito com outro PostgreSQL já usando a 5432.
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      # A partir do PostgreSQL 18, a imagem guarda os dados em
+      # /var/lib/postgresql/<versão>/docker; o volume monta o diretório pai.
+      - mindhub-pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mindhub-pgdata:

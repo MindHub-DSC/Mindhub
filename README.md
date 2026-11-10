@@ -24,15 +24,14 @@ fragmentação. Detalhes em [docs/visao-geral.md](docs/visao-geral.md).
 
 | Item | Situação |
 | --- | --- |
-| Análise do domínio e arquitetura | Feitas (trabalhos 1 a 6, em [docs/trabalhos](docs/trabalhos/)) |
-| Base técnica NestJS 12 (`GET /` → `Hello World!`) | **Validada** pelo navegador, pelo REST Client e pelo cURL |
-| UC01 — Cadastrar Usuário (`POST /usuarios`) | **Implementado**, com dados em memória e 5 testes HTTP |
-| UC02 — Cadastrar Perfil de Especialista | **Planejado** (primeiro slice); ainda sem código |
-| Banco de dados, ORM, Docker | **Não configurados** |
-| Autenticação | **Não existe** |
+| Análise do domínio e arquitetura | Feitas (trabalhos 1 a 7, em [docs/trabalhos](docs/trabalhos/)) |
+| Base técnica NestJS 12 (`GET /` → `Hello World!`) | **Validada** |
+| UC01 — Cadastrar Usuário (`POST /usuarios`) | **Implementado**, gravando no PostgreSQL |
+| UC02 — Cadastrar Perfil de Especialista (`POST /especialistas`) | **Implementado** (primeiro slice), gravando no PostgreSQL, com testes unitários, de integração e E2E |
+| PostgreSQL (Docker Compose), TypeORM, migrations | **Configurados** para desenvolvimento e testes |
+| API dentro do Docker | **Não** (só o banco roda no container) |
+| Autenticação | **Não existe**: o `usuarioId` do UC02 vem no corpo (limitação D1) |
 | Integração contínua (CI) | **Não configurada** |
-
-Os cadastros de usuário ficam em memória e são perdidos quando o servidor reinicia.
 
 ## Primeiro slice: UC02 — Cadastrar Perfil de Especialista
 
@@ -53,9 +52,9 @@ usuário tem no máximo um Perfil de Especialista**, e o perfil nasce `ATIVO`.
 | zod (validação de entrada) | Configurado |
 | Vitest + supertest (testes) | Configurado |
 | oxlint e Prettier | Configurado |
-| ORM | Previsto; ainda não escolhido |
-| PostgreSQL | Previsto |
-| Docker (serviços `api` e `db`) | Previsto |
+| TypeORM 1.1 (`@nestjs/typeorm`) com migrations versionadas | Configurado |
+| PostgreSQL 18 | Configurado (container `postgres`, porta 5433 no host) |
+| Docker Compose | Configurado só para o banco; a API ainda roda fora do Docker |
 
 ## Organização do repositório
 
@@ -66,45 +65,30 @@ Mindhub/
 │   ├── visao-geral.md           síntese do sistema e do primeiro slice
 │   ├── planejamento-operacional.md   ordem de execução do UC02
 │   ├── apoio/                   decomposição e revisão das issues (etapas 01 e 02)
-│   └── trabalhos/               trabalhos 1 a 5 da disciplina
+│   └── trabalhos/               trabalhos da disciplina
 └── mindhub-backend/             código NestJS
-    ├── src/                     template Hello World (GET /) e UC01 (usuários)
-    ├── test/                    testes HTTP
-    ├── requests.http            requisição GET / para o REST Client
-    └── .env.example             variáveis de ambiente conhecidas
+    ├── src/identidade/          C1: UC01 e a porta pública de reconhecimento de usuário
+    ├── src/oferta/              C2: UC02 (domínio, aplicação, infra, http)
+    ├── src/database/            TypeORM e migrations
+    ├── test/                    unitários, integração e E2E
+    ├── compose.yaml             PostgreSQL com volume persistente
+    ├── requests.http            cenários para o REST Client
+    └── .env.example             variáveis de ambiente (sem segredos)
 ```
 
 ## Executar o backend
 
-Na pasta do repositório:
+O passo a passo completo (`.env`, PostgreSQL, migrations, API, requisições, testes e
+encerramento sem perder dados) está no [README do backend](mindhub-backend/README.md).
+Resumo, na pasta `mindhub-backend`:
 
 ```powershell
-cd mindhub-backend
-pnpm.cmd install --frozen-lockfile
-pnpm.cmd run start:dev
+Copy-Item .env.example .env       # e troque DB_PASSWORD
+pnpm db:up                        # PostgreSQL no Docker
+pnpm install --frozen-lockfile
+pnpm migration:run
+pnpm start:dev
 ```
-
-O servidor usa a porta 3000 (ou a variável `PORT`; veja
-[.env.example](mindhub-backend/.env.example)). Para encerrar, pressione `Ctrl+C`.
-
-Conferir se está no ar (esperado: `200 OK` e `Hello World!`), em outro terminal:
-
-```powershell
-curl.exe -i http://localhost:3000/
-```
-
-Também dá para abrir <http://localhost:3000/> no navegador ou usar o
-[requests.http](mindhub-backend/requests.http) no REST Client do VS Code.
-
-Cadastrar um usuário:
-
-```powershell
-Invoke-RestMethod -Method Post -Uri http://localhost:3000/usuarios -ContentType 'application/json' -Body '{"nome":"Ana","email":"ana@example.com"}'
-```
-
-Estrutura, respostas e comandos de verificação (`build`, `test`, `lint`) estão no
-[README do backend](mindhub-backend/README.md). No Windows, os comandos `.cmd`
-funcionam mesmo quando o PowerShell bloqueia os scripts `.ps1` das ferramentas.
 
 ## Como contribuir
 
@@ -117,6 +101,6 @@ funcionam mesmo quando o PowerShell bloqueia os scripts `.ps1` das ferramentas.
 ## Documentação complementar
 
 - [Visão geral do sistema](docs/visao-geral.md)
-- [Trabalhos anteriores (1 a 5)](docs/trabalhos/)
+- [Trabalhos anteriores](docs/trabalhos/)
 - [Planejamento operacional do UC02](docs/planejamento-operacional.md)
 - [Documentos de apoio das issues](docs/apoio/)
