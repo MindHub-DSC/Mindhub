@@ -5,13 +5,17 @@ import type { ServicosRepositorio } from '../../src/oferta/dominio/servicos.repo
 /**
  * Suíte de contrato da porta ServicosRepositorio (critério 6 da #36).
  * Roda contra a implementação em memória e, na #37, contra a TypeORM.
+ *
+ * novoPerfilId() devolve a referência de um perfil que pode receber Serviços:
+ * em memória basta um UUID; no PostgreSQL o perfil precisa existir (FK).
  */
 export function verificarContratoDeServicos(
   obterRepositorio: () => ServicosRepositorio,
+  novoPerfilId: () => Promise<string> = () => Promise.resolve(randomUUID()),
 ): void {
   const agora = new Date('2026-11-17T12:00:00.000Z');
 
-  function reservaDireta(perfilId = randomUUID(), titulo = 'Mentoria') {
+  function reservaDireta(perfilId: string, titulo = 'Mentoria') {
     return Servico.publicar({
       perfilId,
       titulo,
@@ -27,7 +31,7 @@ export function verificarContratoDeServicos(
     });
   }
 
-  function sobProposta(perfilId = randomUUID(), titulo = 'Consultoria') {
+  function sobProposta(perfilId: string, titulo = 'Consultoria') {
     return Servico.publicar({
       perfilId,
       titulo,
@@ -39,7 +43,7 @@ export function verificarContratoDeServicos(
 
   it('adiciona e busca o mesmo Serviço pelo identificador', async () => {
     const repositorio = obterRepositorio();
-    const servico = reservaDireta();
+    const servico = reservaDireta(await novoPerfilId());
 
     await repositorio.adicionar(servico);
     const lido = await repositorio.buscarPorId(servico.id);
@@ -57,11 +61,12 @@ export function verificarContratoDeServicos(
       duracaoMinutos: 60,
       modalidade: 'ONLINE',
     });
+    expect(lido?.publicadoEm.toISOString()).toBe(agora.toISOString());
   });
 
   it('preserva Serviço Sob Proposta sem condições', async () => {
     const repositorio = obterRepositorio();
-    const servico = sobProposta();
+    const servico = sobProposta(await novoPerfilId());
 
     await repositorio.adicionar(servico);
 
@@ -74,11 +79,13 @@ export function verificarContratoDeServicos(
 
   it('lista os Serviços do perfil na ordem de registro, sem os de outros perfis', async () => {
     const repositorio = obterRepositorio();
-    const perfilId = randomUUID();
+    const perfilId = await novoPerfilId();
     const primeiro = reservaDireta(perfilId, 'Primeiro');
     const segundo = sobProposta(perfilId, 'Segundo');
     await repositorio.adicionar(primeiro);
-    await repositorio.adicionar(reservaDireta(randomUUID(), 'De outro perfil'));
+    await repositorio.adicionar(
+      reservaDireta(await novoPerfilId(), 'De outro perfil'),
+    );
     await repositorio.adicionar(segundo);
 
     const lista = await repositorio.listarPorPerfil(perfilId);
@@ -92,7 +99,7 @@ export function verificarContratoDeServicos(
 
   it('devolve cópias defensivas: alterar o retorno não altera o registro', async () => {
     const repositorio = obterRepositorio();
-    const perfilId = randomUUID();
+    const perfilId = await novoPerfilId();
     const servico = reservaDireta(perfilId);
     await repositorio.adicionar(servico);
 
