@@ -6,6 +6,14 @@ export class PerfilInvalido extends Error {
   }
 }
 
+/** Os dados do Serviço violam uma invariante do domínio (UC03). */
+export class ServicoInvalido extends Error {
+  constructor(readonly motivo: string) {
+    super(motivo);
+    this.name = 'ServicoInvalido';
+  }
+}
+
 /**
  * RN-UC02-01: o Usuário já possui um Perfil de Especialista, em qualquer
  * situação. A mensagem não revela se o perfil existente está suspenso.

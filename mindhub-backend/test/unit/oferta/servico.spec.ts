@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { ServicoInvalido } from '../../../src/oferta/dominio/erros.js';
 import { Servico } from '../../../src/oferta/dominio/servico.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -40,5 +41,24 @@ describe('Servico.publicar', () => {
     };
 
     expect(Servico.publicar(dados).id).not.toBe(Servico.publicar(dados).id);
+  });
+
+  // Critério de aceite 2 da #36: Modelo de Contratação ausente ou fora de
+  // Reserva Direta/Sob Proposta é recusado pelo domínio.
+  it.each([
+    ['ausente', undefined],
+    ['vazio', ''],
+    ['fora dos valores', 'LEILAO'],
+  ])('recusa Modelo de Contratação %s', (_caso, modeloContratacao) => {
+    const dados = {
+      perfilId: randomUUID(),
+      titulo: 'Mentoria de produto',
+      descricao: 'Sessões de discovery para times iniciantes',
+      // Simula o dado vindo de fora do TypeScript (API, banco).
+      modeloContratacao: modeloContratacao as never,
+      agora,
+    };
+
+    expect(() => Servico.publicar(dados)).toThrow(ServicoInvalido);
   });
 });
