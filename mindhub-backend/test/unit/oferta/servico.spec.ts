@@ -207,6 +207,7 @@ describe('Servico.reconstituir', () => {
     modeloContratacao: 'SOB_PROPOSTA',
     situacao: 'PUBLICADO',
     condicoes: null,
+    publicadoEm: new Date('2026-11-17T12:00:00.000Z'),
   };
 
   it('restaura identidade e situação sem gerar id novo', () => {
@@ -224,6 +225,97 @@ describe('Servico.reconstituir', () => {
   ])('recusa %s', (_caso, alteracao) => {
     expect(() => Servico.reconstituir({ ...registrado, ...alteracao })).toThrow(
       ServicoInvalido,
+    );
+  });
+});
+
+describe('Servico — data de publicação (A2, decidida em 17/11/2026)', () => {
+  function publicar() {
+    return Servico.publicar({
+      perfilId: randomUUID(),
+      titulo: 'Mentoria',
+      descricao: 'Discovery',
+      modeloContratacao: 'SOB_PROPOSTA',
+      agora,
+    });
+  }
+
+  it('guarda o instante de publicação recebido em agora', () => {
+    expect(publicar().publicadoEm.toISOString()).toBe(agora.toISOString());
+  });
+
+  it('devolve cópia: alterar a data retornada não altera o Serviço', () => {
+    const servico = publicar();
+    servico.publicadoEm.setFullYear(2000);
+
+    expect(servico.publicadoEm.toISOString()).toBe(agora.toISOString());
+  });
+
+  it('reconstituir restaura a data e paraDados a devolve', () => {
+    const data = new Date('2026-11-01T08:30:00.000Z');
+    const servico = Servico.reconstituir({
+      id: randomUUID(),
+      perfilId: randomUUID(),
+      titulo: 'Mentoria',
+      descricao: 'Discovery',
+      modeloContratacao: 'SOB_PROPOSTA',
+      situacao: 'PUBLICADO',
+      condicoes: null,
+      publicadoEm: data,
+    });
+
+    expect(servico.publicadoEm.toISOString()).toBe(data.toISOString());
+    expect(servico.paraDados().publicadoEm.toISOString()).toBe(
+      data.toISOString(),
+    );
+  });
+
+  it('recusa data de publicação inválida', () => {
+    expect(() =>
+      Servico.publicar({
+        perfilId: randomUUID(),
+        titulo: 'Mentoria',
+        descricao: 'Discovery',
+        modeloContratacao: 'SOB_PROPOSTA',
+        agora: new Date('data inválida'),
+      }),
+    ).toThrow(ServicoInvalido);
+  });
+});
+
+describe('Servico — limites de texto (decididos em 17/11/2026)', () => {
+  function publicar(titulo: string, descricao: string) {
+    return Servico.publicar({
+      perfilId: randomUUID(),
+      titulo,
+      descricao,
+      modeloContratacao: 'SOB_PROPOSTA',
+      agora,
+    });
+  }
+
+  it('aceita título com 120 e descrição com 2000 caracteres', () => {
+    const servico = publicar('t'.repeat(120), 'd'.repeat(2000));
+
+    expect(servico.titulo).toHaveLength(120);
+    expect(servico.descricao).toHaveLength(2000);
+  });
+
+  it('recusa título com 121 caracteres', () => {
+    expect(() => publicar('t'.repeat(121), 'Discovery')).toThrow(
+      ServicoInvalido,
+    );
+  });
+
+  it('recusa descrição com 2001 caracteres', () => {
+    expect(() => publicar('Mentoria', 'd'.repeat(2001))).toThrow(
+      ServicoInvalido,
+    );
+  });
+
+  it('conta o tamanho depois de aparar', () => {
+    expect(publicar(`  ${'t'.repeat(120)}  `, 'Discovery').titulo).toHaveLength(
+      120,
     );
   });
 });
