@@ -20,12 +20,14 @@
     "lint": "oxlint --type-aware src/ test/",
     "test": "vitest run",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
-    "db:up": "docker compose up -d --wait",
+    "db:up": "docker compose up -d --wait postgres",
     "db:stop": "docker compose stop",
     "migration:generate": "pnpm run build && typeorm migration:generate -d dist/database/data-source.js",
     "migration:run": "pnpm run build && typeorm migration:run -d dist/database/data-source.js",
     "migration:revert": "pnpm run build && typeorm migration:revert -d dist/database/data-source.js",
-    "migration:show": "pnpm run build && typeorm migration:show -d dist/database/data-source.js"
+    "migration:show": "pnpm run build && typeorm migration:show -d dist/database/data-source.js",
+    "migration:show:prod": "typeorm migration:show -d dist/database/data-source.js",
+    "migration:run:prod": "typeorm migration:run -d dist/database/data-source.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

@@ -41,7 +41,7 @@ se mudar, altere `DB_PORT`.
 ### 2. Iniciar o PostgreSQL
 
 ```powershell
-pnpm db:up                  # = docker compose up -d --wait (espera o healthcheck)
+pnpm db:up                  # = docker compose up -d --wait postgres (espera o healthcheck)
 docker compose ps           # deve mostrar "healthy"
 ```
 
@@ -80,6 +80,21 @@ pnpm start:dev
 
 Pronta quando o log mostrar `Mapped {/especialistas, POST} route` e
 `Nest application successfully started`. Porta 3000 (ou `PORT`).
+
+#### Alternativa: API em contêiner
+
+O serviço `api` do `compose.yaml` constrói a imagem pelo `Dockerfile` e sobe a API
+depois que o PostgreSQL fica `healthy`. Dentro da rede do Compose ela usa
+`DB_HOST=postgres` e `DB_PORT=5432` (porta interna); usuário, senha e banco vêm do `.env`.
+Não rode as duas APIs ao mesmo tempo: ambas usam a porta 3000.
+
+```powershell
+docker compose run --rm --no-deps api pnpm migration:show:prod   # histórico, de dentro do contêiner
+docker compose run --rm api pnpm migration:run:prod              # só se houver [ ] pendente
+docker compose up -d --build api
+docker compose logs api                                          # espere "Nest application successfully started"
+docker compose restart api                                       # reinicia só a API; o banco continua no ar
+```
 
 ### 6. Executar as requisições
 
