@@ -29,6 +29,17 @@ export interface CondicoesVigentes {
   modalidade: string;
 }
 
+/** Dados de um Serviço já registrado, usados para reconstituí-lo. */
+export interface DadosDoServico {
+  id: string;
+  perfilId: string;
+  titulo: string;
+  descricao: string;
+  modeloContratacao: string;
+  situacao: string;
+  condicoes: CondicoesVigentes | null;
+}
+
 /**
  * Serviço (C2): oferta publicada por um Perfil de Especialista.
  * Guarda só a referência do perfil. Não há setters: o Serviço nasce por
@@ -67,6 +78,41 @@ export class Servico {
       'PUBLICADO',
       condicoesPara(modelo, dados.condicoes),
     );
+  }
+
+  /**
+   * Restaura um Serviço já registrado, com a identidade e a situação que ele
+   * tinha. Não gera id novo, mas recusa dados que violem as invariantes.
+   */
+  static reconstituir(dados: DadosDoServico): Servico {
+    if (dados.situacao !== 'PUBLICADO') {
+      throw new ServicoInvalido(
+        `Situação desconhecida: ${String(dados.situacao)}.`,
+      );
+    }
+    const modelo = exigirModelo(dados.modeloContratacao);
+    return new Servico(
+      exigirTexto(dados.id, 'O identificador', false),
+      exigirTexto(dados.perfilId, 'A referência ao perfil', false),
+      exigirTexto(dados.titulo, 'O título'),
+      exigirTexto(dados.descricao, 'A descrição'),
+      modelo,
+      dados.situacao,
+      condicoesPara(modelo, dados.condicoes ?? undefined),
+    );
+  }
+
+  /** Dados para registro; as condições são copiadas. */
+  paraDados(): DadosDoServico {
+    return {
+      id: this._id,
+      perfilId: this._perfilId,
+      titulo: this._titulo,
+      descricao: this._descricao,
+      modeloContratacao: this._modeloContratacao,
+      situacao: this._situacao,
+      condicoes: this.condicoes,
+    };
   }
 
   get id(): string {
