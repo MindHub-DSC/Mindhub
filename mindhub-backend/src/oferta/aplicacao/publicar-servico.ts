@@ -1,8 +1,8 @@
 import type { PerfisEspecialistaRepositorio } from '../dominio/perfis-especialista.repositorio.js';
-import type {
-  CondicoesVigentes,
-  ModeloContratacao,
+import {
   Servico,
+  type CondicoesVigentes,
+  type ModeloContratacao,
 } from '../dominio/servico.js';
 import type { ServicosRepositorio } from '../dominio/servicos.repositorio.js';
 
@@ -37,7 +37,8 @@ export class PerfilSuspenso extends Error {
 
 /**
  * UC03 — Publicar Serviço (#38).
- * Contrato da fase RED: ainda sem comportamento.
+ * Só coordena: obtém o perfil do ator, pede ao domínio que crie o Serviço e
+ * ao repositório que o registre. Não decide as invariantes do Serviço.
  */
 export class PublicarServico {
   constructor(
@@ -46,9 +47,17 @@ export class PublicarServico {
     private readonly relogio: () => Date = () => new Date(),
   ) {}
 
-  executar(_comando: PublicarServicoCommand): Promise<Servico> {
-    return Promise.reject(
-      new Error('PublicarServico.executar ainda não implementado.'),
-    );
+  async executar(comando: PublicarServicoCommand): Promise<Servico> {
+    const perfil = await this.perfis.buscarPorUsuario(comando.usuarioId);
+    const servico = Servico.publicar({
+      perfilId: perfil!.id,
+      titulo: comando.titulo,
+      descricao: comando.descricao,
+      modeloContratacao: comando.modeloContratacao,
+      condicoes: comando.condicoes,
+      agora: this.relogio(),
+    });
+    await this.servicos.adicionar(servico);
+    return servico;
   }
 }
