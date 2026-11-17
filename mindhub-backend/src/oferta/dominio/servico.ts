@@ -4,14 +4,6 @@ export type ModeloContratacao = 'RESERVA_DIRETA' | 'SOB_PROPOSTA';
 
 export type SituacaoServico = 'PUBLICADO';
 
-/** Falha provisória da fase RED do TDD (#36): comportamento ainda não implementado. */
-export class NaoImplementado extends Error {
-  constructor(operacao: string) {
-    super(`${operacao} ainda não implementado.`);
-    this.name = 'NaoImplementado';
-  }
-}
-
 /**
  * Serviço (C2): oferta publicada por um Perfil de Especialista.
  * Guarda só a referência do perfil. Não há setters: o Serviço nasce por
