@@ -197,3 +197,33 @@ describe('Servico.publicar — título, descrição e perfil (D-UC03-01)', () =>
     expect(() => publicar(alteracao)).toThrow(ServicoInvalido);
   });
 });
+
+describe('Servico.reconstituir', () => {
+  const registrado = {
+    id: randomUUID(),
+    perfilId: randomUUID(),
+    titulo: 'Mentoria',
+    descricao: 'Discovery',
+    modeloContratacao: 'SOB_PROPOSTA',
+    situacao: 'PUBLICADO',
+    condicoes: null,
+  };
+
+  it('restaura identidade e situação sem gerar id novo', () => {
+    const servico = Servico.reconstituir(registrado);
+
+    expect(servico.id).toBe(registrado.id);
+    expect(servico.situacao).toBe('PUBLICADO');
+  });
+
+  it.each([
+    ['situação desconhecida', { situacao: 'ARQUIVADO' }],
+    ['modelo desconhecido', { modeloContratacao: 'LEILAO' }],
+    ['identificador vazio', { id: '' }],
+    ['Reserva Direta sem condições', { modeloContratacao: 'RESERVA_DIRETA' }],
+  ])('recusa %s', (_caso, alteracao) => {
+    expect(() => Servico.reconstituir({ ...registrado, ...alteracao })).toThrow(
+      ServicoInvalido,
+    );
+  });
+});
