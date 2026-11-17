@@ -100,3 +100,65 @@ describe('Servico.publicar — Reserva Direta', () => {
     );
   });
 });
+
+describe('Servico.publicar — Sob Proposta', () => {
+  // Critério de aceite 4 da #36: Sob Proposta é criada sem condições vigentes
+  // obrigatórias (D-UC03-03).
+  it('nasce sem condições vigentes', () => {
+    const servico = Servico.publicar({
+      perfilId: randomUUID(),
+      titulo: 'Consultoria sob medida',
+      descricao: 'Escopo e preço combinados na proposta',
+      modeloContratacao: 'SOB_PROPOSTA',
+      agora,
+    });
+
+    expect(servico.modeloContratacao).toBe('SOB_PROPOSTA');
+    expect(servico.condicoes).toBeNull();
+  });
+});
+
+describe('Servico.publicar — condições vigentes inválidas', () => {
+  const validas = {
+    preco: 15000,
+    moeda: 'BRL',
+    duracaoMinutos: 60,
+    modalidade: 'ONLINE',
+  };
+
+  // Critério de aceite 5 da #36: preço negativo ou não inteiro, moeda vazia e
+  // duração não positiva são recusados.
+  it.each([
+    ['preço negativo', { preco: -1 }],
+    ['preço não inteiro', { preco: 99.5 }],
+    ['moeda vazia', { moeda: '' }],
+    ['moeda só espaços', { moeda: '   ' }],
+    ['duração zero', { duracaoMinutos: 0 }],
+    ['duração negativa', { duracaoMinutos: -30 }],
+    ['modalidade vazia', { modalidade: '' }],
+  ])('recusa %s', (_caso, alteracao) => {
+    expect(() =>
+      Servico.publicar({
+        perfilId: randomUUID(),
+        titulo: 'Mentoria de produto',
+        descricao: 'Sessões de discovery para times iniciantes',
+        modeloContratacao: 'RESERVA_DIRETA',
+        condicoes: { ...validas, ...alteracao },
+        agora,
+      }),
+    ).toThrow(ServicoInvalido);
+  });
+
+  it('aceita preço zero (D-UC03-02: inteiro maior ou igual a 0)', () => {
+    const servico = Servico.publicar({
+      perfilId: randomUUID(),
+      titulo: 'Mentoria de produto',
+      descricao: 'Sessões de discovery para times iniciantes',
+      modeloContratacao: 'RESERVA_DIRETA',
+      condicoes: { ...validas, preco: 0 },
+      agora,
+    });
+
+    expect(servico.condicoes?.preco).toBe(0);
+  });
+});
