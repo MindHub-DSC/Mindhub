@@ -5,6 +5,7 @@ import { opcoesTypeOrm } from '../../src/database/opcoes-typeorm.js';
 import { PerfilEspecialista } from '../../src/oferta/dominio/perfil-especialista.js';
 import { PerfilEspecialistaOrmEntity } from '../../src/oferta/infra/perfil-especialista.orm-entity.js';
 import { PerfisEspecialistaTypeOrmRepositorio } from '../../src/oferta/infra/perfis-especialista.typeorm-repositorio.js';
+import { RegistroDeServicoCorrompido } from '../../src/oferta/infra/servico.mapper.js';
 import { ServicoOrmEntity } from '../../src/oferta/infra/servico.orm-entity.js';
 import { ServicosTypeOrmRepositorio } from '../../src/oferta/infra/servicos.typeorm-repositorio.js';
 import { verificarContratoDeServicos } from '../support/contrato-servicos.js';
@@ -79,6 +80,22 @@ describe('Contrato ServicosRepositorio — TypeORM/PostgreSQL', () => {
       ],
     );
   }
+
+  it('registro que o banco aceita mas o domínio não (título só espaços) não vira Serviço', async () => {
+    const perfilId = await novoPerfilId();
+    const id = randomUUID();
+    // O banco não tem regra para título só com espaços: é invariante do domínio.
+    await banco.query(
+      `INSERT INTO oferta.servicos
+         (id, perfil_id, titulo, descricao, modelo_contratacao, situacao, publicado_em)
+       VALUES ($1, $2, '   ', 'Discovery', 'SOB_PROPOSTA', 'PUBLICADO', now())`,
+      [id, perfilId],
+    );
+
+    await expect(repositorio().buscarPorId(id)).rejects.toBeInstanceOf(
+      RegistroDeServicoCorrompido,
+    );
+  });
 
   it('o banco recusa Serviço de perfil inexistente (fk_servicos_perfil)', async () => {
     await expect(
