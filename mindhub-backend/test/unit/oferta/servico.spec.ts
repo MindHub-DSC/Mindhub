@@ -29,7 +29,9 @@ describe('Servico.publicar', () => {
     expect(servico.id).toMatch(UUID);
     expect(servico.perfilId).toBe(perfilId);
     expect(servico.titulo).toBe('Mentoria de produto');
-    expect(servico.descricao).toBe('Sessões de discovery para times iniciantes');
+    expect(servico.descricao).toBe(
+      'Sessões de discovery para times iniciantes',
+    );
     expect(servico.modeloContratacao).toBe('SOB_PROPOSTA');
     expect(servico.situacao).toBe('PUBLICADO');
   });
@@ -160,5 +162,38 @@ describe('Servico.publicar — condições vigentes inválidas', () => {
     });
 
     expect(servico.condicoes?.preco).toBe(0);
+  });
+});
+
+describe('Servico.publicar — título, descrição e perfil (D-UC03-01)', () => {
+  function publicar(alteracao: Record<string, string>) {
+    return Servico.publicar({
+      perfilId: randomUUID(),
+      titulo: 'Mentoria de produto',
+      descricao: 'Sessões de discovery para times iniciantes',
+      modeloContratacao: 'SOB_PROPOSTA',
+      agora,
+      ...alteracao,
+    });
+  }
+
+  it('apara título e descrição', () => {
+    const servico = publicar({
+      titulo: '  Mentoria  ',
+      descricao: ' Discovery ',
+    });
+
+    expect(servico.titulo).toBe('Mentoria');
+    expect(servico.descricao).toBe('Discovery');
+  });
+
+  it.each([
+    ['título vazio', { titulo: '' }],
+    ['título só espaços', { titulo: '   ' }],
+    ['descrição vazia', { descricao: '' }],
+    ['descrição só espaços', { descricao: '  ' }],
+    ['referência ao perfil vazia', { perfilId: ' ' }],
+  ])('recusa %s', (_caso, alteracao) => {
+    expect(() => publicar(alteracao)).toThrow(ServicoInvalido);
   });
 });
