@@ -1,5 +1,5 @@
-# PostgreSQL do Mindhub para desenvolvimento e testes.
-# A API roda fora do Docker (pnpm start:dev); só o banco fica no container.
+# PostgreSQL do Mindhub para desenvolvimento e testes, e a API em contêiner.
+# A API também pode rodar fora do Docker (pnpm start:dev), usando o .env.
 # Variáveis lidas do arquivo .env desta pasta (copie de .env.example).
 name: mindhub
 
@@ -23,6 +23,30 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  # API NestJS em contêiner (#141): docker compose up -d --build api
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mindhub-api:dev
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      PORT: 3000
+      # Dentro da rede do Compose o banco é o serviço "postgres", na porta
+      # interna 5432. O DB_HOST/DB_PORT do .env (localhost:5433) valem só
+      # para quem roda no host. Sempre o banco de desenvolvimento (DB_NAME),
+      # nunca o de testes.
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:?defina DB_USER no .env}
+      DB_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD no .env}
+      DB_NAME: ${DB_NAME:?defina DB_NAME no .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   mindhub-pgdata:

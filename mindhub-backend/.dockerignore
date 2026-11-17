@@ -1,0 +1,21 @@
+# Contexto de build do Dockerfile (#141): só o que a imagem usa.
+# Dependências e saídas geradas no host (a imagem instala e compila as suas)
+node_modules
+dist
+coverage
+*.tsbuildinfo
+*.log
+tmp
+
+# Variáveis de ambiente e segredos: nunca entram na imagem
+.env
+.env.*
+!.env.example
+
+# Arquivos que a imagem não usa
+.git
+test
+requests.http
+Dockerfile
+.dockerignore
+compose.yaml
