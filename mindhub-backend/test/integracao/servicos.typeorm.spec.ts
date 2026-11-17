@@ -55,4 +55,47 @@ describe('Contrato ServicosRepositorio — TypeORM/PostgreSQL', () => {
   }
 
   verificarContratoDeServicos(repositorio, novoPerfilId);
+
+  // Esquema (migration ServicosDoUc03): o banco protege sozinho, mesmo sem
+  // passar pelo domínio.
+  function inserirDireto(
+    perfilId: string,
+    modelo: string,
+    preco: number | null,
+  ) {
+    return banco.query(
+      `INSERT INTO oferta.servicos
+         (id, perfil_id, titulo, descricao, modelo_contratacao, situacao,
+          preco, moeda, duracao_minutos, modalidade, publicado_em)
+       VALUES ($1, $2, 'T', 'D', $3, 'PUBLICADO', $4, $5, $6, $7, now())`,
+      [
+        randomUUID(),
+        perfilId,
+        modelo,
+        preco,
+        preco === null ? null : 'BRL',
+        preco === null ? null : 60,
+        preco === null ? null : 'ONLINE',
+      ],
+    );
+  }
+
+  it('o banco recusa Serviço de perfil inexistente (fk_servicos_perfil)', async () => {
+    await expect(
+      inserirDireto(randomUUID(), 'SOB_PROPOSTA', null),
+    ).rejects.toMatchObject({
+      driverError: { code: '23503', constraint: 'fk_servicos_perfil' },
+    });
+  });
+
+  it('o banco recusa Reserva Direta sem condições (CHECK)', async () => {
+    await expect(
+      inserirDireto(await novoPerfilId(), 'RESERVA_DIRETA', null),
+    ).rejects.toMatchObject({
+      driverError: {
+        code: '23514',
+        constraint: 'ck_servicos_reserva_direta_com_condicoes',
+      },
+    });
+  });
 });

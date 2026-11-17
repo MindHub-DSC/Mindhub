@@ -10,6 +10,12 @@ export async function limparDadosDosUsuarios(
   usuarioIds: string[],
 ): Promise<void> {
   if (usuarioIds.length === 0) return;
+  // Serviços primeiro: a FK fk_servicos_perfil impede apagar o perfil antes.
+  await banco.query(
+    `DELETE FROM oferta.servicos WHERE perfil_id IN (
+       SELECT id FROM oferta.perfis_especialista WHERE usuario_id = ANY($1::uuid[]))`,
+    [usuarioIds],
+  );
   await banco.query(
     'DELETE FROM oferta.perfis_especialista WHERE usuario_id = ANY($1::uuid[])',
     [usuarioIds],
