@@ -42,3 +42,7 @@ Todas foram vinculadas ao épico como sub-issues nativas do GitHub (7 de 7).
 ## Versionamento
 
 Os documentos de `docs/` **não foram commitados**. A Atividade Prática 03 proíbe commits nesta etapa.
+
+## Atualização — GitHub Project (10/11/2026)
+
+O board pendente foi criado como o Project único da organização, [Planejamento - Mindhub](https://github.com/orgs/MindHub-DSC/projects/1), proposto em `docs/planejamento/uc05/01-08`. O campo Status tem `Backlog`, `Ready`, `In Progress`, `In Review` e `Done`. As issues #1 a #8 foram adicionadas com Status `Backlog`, junto com as dos casos de uso UC05, UC07 e UC10.
