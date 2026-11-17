@@ -110,7 +110,36 @@ function condicoesPara(
     }
     return null;
   }
-  return { ...condicoes };
+  return validarCondicoes(condicoes);
+}
+
+/** Critério 5 da #36 (D-UC03-02): valores que as condições vigentes aceitam. */
+function validarCondicoes(condicoes: CondicoesVigentes): CondicoesVigentes {
+  const { preco, duracaoMinutos } = condicoes;
+  if (!Number.isInteger(preco) || preco < 0) {
+    throw new ServicoInvalido(
+      'O preço deve ser um inteiro maior ou igual a 0, na unidade monetária mínima.',
+    );
+  }
+  if (!Number.isInteger(duracaoMinutos) || duracaoMinutos <= 0) {
+    throw new ServicoInvalido(
+      'A duração deve ser um número inteiro de minutos maior que 0.',
+    );
+  }
+  return {
+    preco,
+    moeda: exigirTexto(condicoes.moeda, 'A moeda'),
+    duracaoMinutos,
+    modalidade: exigirTexto(condicoes.modalidade, 'A modalidade'),
+  };
+}
+
+function exigirTexto(valor: string, campo: string): string {
+  const aparado = typeof valor === 'string' ? valor.trim() : '';
+  if (aparado.length === 0) {
+    throw new ServicoInvalido(`${campo} deve ser informada.`);
+  }
+  return aparado;
 }
 
 /** Critério 2 da #36: só Reserva Direta ou Sob Proposta. */
