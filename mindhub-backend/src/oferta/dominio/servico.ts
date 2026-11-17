@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { CondicoesVigentesAusentes, ServicoInvalido } from './erros.js';
 
+/** Limites de texto decididos em 17/11/2026 (#36). */
+export const MAX_CARACTERES_TITULO = 120;
+export const MAX_CARACTERES_DESCRICAO = 2000;
+
 /** Como o Serviço é contratado (UC03). */
 export const ModeloContratacao = {
   RESERVA_DIRETA: 'RESERVA_DIRETA',
@@ -55,6 +59,7 @@ export class Servico {
     private readonly _modeloContratacao: ModeloContratacao,
     private readonly _situacao: SituacaoServico,
     private readonly _condicoes: CondicoesVigentes | null,
+    private readonly _publicadoEm: Date,
   ) {}
 
   /**
@@ -73,11 +78,17 @@ export class Servico {
     return new Servico(
       randomUUID(),
       exigirTexto(dados.perfilId, 'A referência ao perfil', false),
-      exigirTexto(dados.titulo, 'O título'),
-      exigirTexto(dados.descricao, 'A descrição'),
+      exigirTexto(dados.titulo, 'O título', true, MAX_CARACTERES_TITULO),
+      exigirTexto(
+        dados.descricao,
+        'A descrição',
+        true,
+        MAX_CARACTERES_DESCRICAO,
+      ),
       modelo,
       'PUBLICADO',
       condicoesPara(modelo, dados.condicoes),
+      exigirData(dados.agora),
     );
   }
 
@@ -95,11 +106,17 @@ export class Servico {
     return new Servico(
       exigirTexto(dados.id, 'O identificador', false),
       exigirTexto(dados.perfilId, 'A referência ao perfil', false),
-      exigirTexto(dados.titulo, 'O título'),
-      exigirTexto(dados.descricao, 'A descrição'),
+      exigirTexto(dados.titulo, 'O título', true, MAX_CARACTERES_TITULO),
+      exigirTexto(
+        dados.descricao,
+        'A descrição',
+        true,
+        MAX_CARACTERES_DESCRICAO,
+      ),
       modelo,
       dados.situacao,
       condicoesPara(modelo, dados.condicoes ?? undefined),
+      exigirData(dados.publicadoEm),
     );
   }
 
@@ -141,9 +158,9 @@ export class Servico {
     return this._situacao;
   }
 
-  /** Contrato da decisão A2 (17/11/2026); ainda sem implementação (RED). */
+  /** Instante da publicação (decisão A2); devolve cópia. */
   get publicadoEm(): Date {
-    return new Date(0);
+    return new Date(this._publicadoEm);
   }
 
   /** Cópia das condições vigentes, ou null quando não há (Sob Proposta). */
@@ -188,15 +205,34 @@ function validarCondicoes(condicoes: CondicoesVigentes): CondicoesVigentes {
 }
 
 /**
- * D-UC03-01: texto aparado com ao menos 1 caractere. Referências (ids) são
- * conferidas sem alterar o valor (aparar = false).
+ * D-UC03-01: texto aparado com ao menos 1 caractere e, quando há limite,
+ * no máximo `maximo` caracteres depois de aparar (limites decididos em
+ * 17/11/2026). Referências (ids) são conferidas sem alterar o valor.
  */
-function exigirTexto(valor: string, campo: string, aparar = true): string {
+function exigirTexto(
+  valor: string,
+  campo: string,
+  aparar = true,
+  maximo = Number.POSITIVE_INFINITY,
+): string {
   const aparado = typeof valor === 'string' ? valor.trim() : '';
   if (aparado.length === 0) {
     throw new ServicoInvalido(`${campo}: informe ao menos 1 caractere.`);
   }
+  if (aparado.length > maximo) {
+    throw new ServicoInvalido(
+      `${campo}: informe no máximo ${maximo} caracteres.`,
+    );
+  }
   return aparar ? aparado : valor;
+}
+
+/** Decisão A2: o instante da publicação precisa ser uma data válida. */
+function exigirData(data: Date): Date {
+  if (!(data instanceof Date) || Number.isNaN(data.getTime())) {
+    throw new ServicoInvalido('Data de publicação inválida.');
+  }
+  return new Date(data);
 }
 
 /** Critério 2 da #36: só Reserva Direta ou Sob Proposta. */
