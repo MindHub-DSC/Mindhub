@@ -5,6 +5,7 @@ import {
   type ModeloContratacao,
 } from '../dominio/servico.js';
 import type { ServicosRepositorio } from '../dominio/servicos.repositorio.js';
+import { SituacaoPerfil } from '../dominio/situacao-perfil.js';
 
 /**
  * Intenção "quero publicar um Serviço", independente de HTTP.
@@ -49,8 +50,11 @@ export class PublicarServico {
 
   async executar(comando: PublicarServicoCommand): Promise<Servico> {
     const perfil = await this.perfis.buscarPorUsuario(comando.usuarioId);
+    if (!perfil) throw new AtorSemPerfil();
+    if (perfil.situacao !== SituacaoPerfil.ATIVO) throw new PerfilSuspenso();
+
     const servico = Servico.publicar({
-      perfilId: perfil!.id,
+      perfilId: perfil.id,
       titulo: comando.titulo,
       descricao: comando.descricao,
       modeloContratacao: comando.modeloContratacao,
