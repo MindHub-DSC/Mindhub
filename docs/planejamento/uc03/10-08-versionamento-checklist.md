@@ -116,7 +116,30 @@ A documentação (`10-01` a `10-08` e os prompts `10` e `10.1`) vai num PR separ
 
 ## 19. GitHub Project
 
-**Não foi possível verificar:** `gh project list` → `your authentication token is missing required scopes [read:project]`. Estado correto a aplicar manualmente: #141 em `In Review` (PR #142 em Draft aguardando revisão humana); nenhuma issue em `Done`.
+Primeira tentativa: `gh project list` → `your authentication token is missing required scopes [read:project]`. @leohsm ampliou o token (`gh auth refresh -h github.com -s project`, `✓ Authentication complete.`) e a verificação foi refeita:
+
+```text
+$ gh project list --owner MindHub-DSC
+1	Planejamento - Mindhub	open	PVT_kwDOFAG7gs4BrCtE
+
+$ gh project item-list 1 --owner MindHub-DSC   (issues do UC03, antes)
+35	Backlog
+36	In Progress
+37	Backlog
+38	Backlog
+39	Backlog
+40	Backlog
+41	Backlog
+141	-            ← incluída automaticamente no Project, sem status
+
+$ gh project item-edit … --field-id <Status> --single-select-option-id <In Review>   (#141)
+$ gh issue view 141 --json projectItems
+Planejamento - Mindhub=In Review
+```
+
+Fluxo do campo Status: `Backlog → Ready → In Progress → In Review → Done` (preservado). A **#141** foi movida para **`In Review`** (PR #142 aguarda revisão humana); nada foi para `Done`.
+
+**Divergência encontrada (não corrigida nesta atividade):** o quadro não acompanha o andamento real das outras sub-issues do UC03. #37, #38 e #40 têm PRs Draft com o trabalho feito (#139, #134, #135), mas estão em `Backlog`; o `09-08` registrou a #37 como `In Progress` só porque o Project não pôde ser conferido. Essas issues são de outras etapas e não foram movidas sem decisão do responsável.
 
 ## 20. Diagnóstico estruturado de falhas (Fase 11)
 
@@ -203,16 +226,16 @@ Categorias sem ocorrência: rede (nome/porta), credenciais, TypeORM, persistênc
 | Alterações inspecionadas e segredos não versionados | Confirmado | Seção 17 |
 | Commits reais identificados | Confirmado | `19cd672` |
 | PR existente verificado ou novo PR preparado | Confirmado | Nenhum existia; #142 criado (Draft) |
-| Evidências registradas e GitHub Project atualizado | **Não foi possível verificar** (Project) | Evidências no PR #142 e na #141; Project sem escopo no token |
+| Evidências registradas e GitHub Project atualizado | Confirmado | Evidências no PR #142 e na #141; #141 em `In Review` no Project (seção 19) |
 | Nenhum merge automático realizado | Confirmado | #131, #134, #135, #139, #142 sem merge |
 
-**Resumo (35 itens):** 34 confirmados, 1 não foi possível verificar (GitHub Project). Nenhum pendente.
+**Resumo (35 itens):** 35 confirmados. (O Project ficou "não foi possível verificar" até o token ganhar o escopo `project`; depois foi conferido e atualizado.)
 
 ## 22. Pendências
 
 | Pendência | Responsável |
 | --- | --- |
-| Mover o card da #141 para `In Review` no GitHub Project (token sem `read:project`; ou rodar `gh auth refresh -s project`) | @leohsm |
+| Decidir o status no Project das sub-issues #37, #38 e #40 (estão em `Backlog`, com PRs Draft prontos) | @leohsm |
 | Revisão humana do PR #142 | @leohsm |
 | Integrar a cadeia na ordem #131 → #134 → #135 → #139 → #142 | @leohsm |
 | Revisar e integrar o PR de documentação do Material 10 | @leohsm |
