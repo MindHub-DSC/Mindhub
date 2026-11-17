@@ -60,9 +60,9 @@ export class Servico {
     const modelo = exigirModelo(dados.modeloContratacao);
     return new Servico(
       randomUUID(),
-      dados.perfilId,
-      dados.titulo,
-      dados.descricao,
+      exigirTexto(dados.perfilId, 'A referência ao perfil', false),
+      exigirTexto(dados.titulo, 'O título'),
+      exigirTexto(dados.descricao, 'A descrição'),
       modelo,
       'PUBLICADO',
       condicoesPara(modelo, dados.condicoes),
@@ -134,12 +134,16 @@ function validarCondicoes(condicoes: CondicoesVigentes): CondicoesVigentes {
   };
 }
 
-function exigirTexto(valor: string, campo: string): string {
+/**
+ * D-UC03-01: texto aparado com ao menos 1 caractere. Referências (ids) são
+ * conferidas sem alterar o valor (aparar = false).
+ */
+function exigirTexto(valor: string, campo: string, aparar = true): string {
   const aparado = typeof valor === 'string' ? valor.trim() : '';
   if (aparado.length === 0) {
-    throw new ServicoInvalido(`${campo} deve ser informada.`);
+    throw new ServicoInvalido(`${campo}: informe ao menos 1 caractere.`);
   }
-  return aparado;
+  return aparar ? aparado : valor;
 }
 
 /** Critério 2 da #36: só Reserva Direta ou Sob Proposta. */
