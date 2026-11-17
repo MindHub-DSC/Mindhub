@@ -1,5 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { ServicoInvalido } from '../../../src/oferta/dominio/erros.js';
+import {
+  CondicoesVigentesAusentes,
+  ServicoInvalido,
+} from '../../../src/oferta/dominio/erros.js';
 import { Servico } from '../../../src/oferta/dominio/servico.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -60,5 +63,40 @@ describe('Servico.publicar', () => {
     };
 
     expect(() => Servico.publicar(dados)).toThrow(ServicoInvalido);
+  });
+});
+
+describe('Servico.publicar — Reserva Direta', () => {
+  const condicoes = {
+    preco: 15000,
+    moeda: 'BRL',
+    duracaoMinutos: 60,
+    modalidade: 'ONLINE',
+  };
+
+  function reservaDireta(extra: Record<string, unknown> = {}) {
+    return {
+      perfilId: randomUUID(),
+      titulo: 'Mentoria de produto',
+      descricao: 'Sessões de discovery para times iniciantes',
+      modeloContratacao: 'RESERVA_DIRETA' as const,
+      agora,
+      ...extra,
+    };
+  }
+
+  // Critério de aceite 3 da #36: Reserva Direta só é criada com condições
+  // vigentes completas, conforme D-UC03-02.
+  it('nasce com as condições vigentes informadas', () => {
+    const servico = Servico.publicar(reservaDireta({ condicoes }));
+
+    expect(servico.modeloContratacao).toBe('RESERVA_DIRETA');
+    expect(servico.condicoes).toEqual(condicoes);
+  });
+
+  it('recusa Reserva Direta sem condições vigentes', () => {
+    expect(() => Servico.publicar(reservaDireta())).toThrow(
+      CondicoesVigentesAusentes,
+    );
   });
 });

@@ -14,6 +14,16 @@ export class ServicoInvalido extends Error {
   }
 }
 
+/** Reserva Direta exige condições vigentes completas (D-UC03-02). */
+export class CondicoesVigentesAusentes extends ServicoInvalido {
+  constructor() {
+    super(
+      'Reserva Direta exige condições vigentes: preço, moeda, duração e modalidade.',
+    );
+    this.name = 'CondicoesVigentesAusentes';
+  }
+}
+
 /**
  * RN-UC02-01: o Usuário já possui um Perfil de Especialista, em qualquer
  * situação. A mensagem não revela se o perfil existente está suspenso.

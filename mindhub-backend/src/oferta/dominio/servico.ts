@@ -19,6 +19,17 @@ export function ehModeloContratacao(
 export type SituacaoServico = 'PUBLICADO';
 
 /**
+ * Condições vigentes de contratação (D-UC03-02): preço inteiro na unidade
+ * monetária mínima (ex.: centavos), moeda, duração em minutos e modalidade.
+ */
+export interface CondicoesVigentes {
+  preco: number;
+  moeda: string;
+  duracaoMinutos: number;
+  modalidade: string;
+}
+
+/**
  * Serviço (C2): oferta publicada por um Perfil de Especialista.
  * Guarda só a referência do perfil. Não há setters: o Serviço nasce por
  * `publicar` e muda apenas por comportamentos nomeados.
@@ -42,6 +53,7 @@ export class Servico {
     titulo: string;
     descricao: string;
     modeloContratacao: ModeloContratacao;
+    condicoes?: CondicoesVigentes;
     agora: Date;
   }): Servico {
     return new Servico(
@@ -76,6 +88,11 @@ export class Servico {
 
   get situacao(): SituacaoServico {
     return this._situacao;
+  }
+
+  /** Contrato do critério 3 da #36; ainda sem implementação (RED). */
+  get condicoes(): CondicoesVigentes | null {
+    return null;
   }
 }
 
