@@ -1,6 +1,20 @@
 import { randomUUID } from 'node:crypto';
+import { ServicoInvalido } from './erros.js';
 
-export type ModeloContratacao = 'RESERVA_DIRETA' | 'SOB_PROPOSTA';
+/** Como o Serviço é contratado (UC03). */
+export const ModeloContratacao = {
+  RESERVA_DIRETA: 'RESERVA_DIRETA',
+  SOB_PROPOSTA: 'SOB_PROPOSTA',
+} as const;
+
+export type ModeloContratacao =
+  (typeof ModeloContratacao)[keyof typeof ModeloContratacao];
+
+export function ehModeloContratacao(
+  valor: unknown,
+): valor is ModeloContratacao {
+  return Object.values<unknown>(ModeloContratacao).includes(valor);
+}
 
 export type SituacaoServico = 'PUBLICADO';
 
@@ -35,7 +49,7 @@ export class Servico {
       dados.perfilId,
       dados.titulo,
       dados.descricao,
-      dados.modeloContratacao,
+      exigirModelo(dados.modeloContratacao),
       'PUBLICADO',
     );
   }
@@ -63,4 +77,14 @@ export class Servico {
   get situacao(): SituacaoServico {
     return this._situacao;
   }
+}
+
+/** Critério 2 da #36: só Reserva Direta ou Sob Proposta. */
+function exigirModelo(modelo: unknown): ModeloContratacao {
+  if (!ehModeloContratacao(modelo)) {
+    throw new ServicoInvalido(
+      'Informe o Modelo de Contratação: RESERVA_DIRETA ou SOB_PROPOSTA.',
+    );
+  }
+  return modelo;
 }
