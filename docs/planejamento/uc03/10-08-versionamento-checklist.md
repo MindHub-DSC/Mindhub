@@ -139,7 +139,22 @@ Planejamento - Mindhub=In Review
 
 Fluxo do campo Status: `Backlog → Ready → In Progress → In Review → Done` (preservado). A **#141** foi movida para **`In Review`** (PR #142 aguarda revisão humana); nada foi para `Done`.
 
-**Divergência encontrada (não corrigida nesta atividade):** o quadro não acompanha o andamento real das outras sub-issues do UC03. #37, #38 e #40 têm PRs Draft com o trabalho feito (#139, #134, #135), mas estão em `Backlog`; o `09-08` registrou a #37 como `In Progress` só porque o Project não pôde ser conferido. Essas issues são de outras etapas e não foram movidas sem decisão do responsável.
+**Divergência encontrada e corrigida com autorização de @leohsm:** o quadro não acompanhava o andamento real das outras sub-issues do UC03. #36 estava em `In Progress` e #37, #38 e #40 em `Backlog`, embora as quatro tenham PRs Draft com o trabalho feito (#131, #139, #134, #135). O `09-08` registrou a #37 como `In Progress` só porque o Project não pôde ser conferido. Com a autorização, as quatro foram movidas para `In Review`:
+
+```text
+$ gh project item-edit … --single-select-option-id <In Review>   (#36, #37, #38, #40)
+$ gh project item-list 1 --owner MindHub-DSC   (issues do UC03, depois)
+35	Backlog
+36	In Review
+37	In Review
+38	In Review
+39	Backlog
+40	In Review
+41	Backlog
+141	In Review
+```
+
+O épico #35 e as issues não iniciadas (#39, #41) continuam em `Backlog`. Nenhuma foi para `Done`: os PRs não foram integrados.
 
 ## 20. Diagnóstico estruturado de falhas (Fase 11)
 
@@ -235,7 +250,6 @@ Categorias sem ocorrência: rede (nome/porta), credenciais, TypeORM, persistênc
 
 | Pendência | Responsável |
 | --- | --- |
-| Decidir o status no Project das sub-issues #37, #38 e #40 (estão em `Backlog`, com PRs Draft prontos) | @leohsm |
 | Revisão humana do PR #142 | @leohsm |
 | Integrar a cadeia na ordem #131 → #134 → #135 → #139 → #142 | @leohsm |
 | Revisar e integrar o PR de documentação do Material 10 | @leohsm |
