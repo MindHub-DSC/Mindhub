@@ -11,6 +11,7 @@ import { PerfilEspecialista } from '../../../src/oferta/dominio/perfil-especiali
 import { PERFIS_ESPECIALISTA_REPOSITORIO } from '../../../src/oferta/dominio/perfis-especialista.repositorio.js';
 import { SERVICOS_REPOSITORIO } from '../../../src/oferta/dominio/servicos.repositorio.js';
 import { PerfilEspecialistaOrmEntity } from '../../../src/oferta/infra/perfil-especialista.orm-entity.js';
+import { ServicoOrmEntity } from '../../../src/oferta/infra/servico.orm-entity.js';
 import { ServicosEmMemoria } from '../../../src/oferta/infra/servicos.em-memoria.js';
 import { OfertaModule } from '../../../src/oferta/oferta.module.js';
 import { PerfisEspecialistaEmMemoria } from '../../support/perfis-especialista.em-memoria.js';
@@ -23,11 +24,13 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
  * ServicosEmMemoria, todos REAIS e resolvidos pelo OfertaModule.
  *
  * Nenhum mock de serviço ou de repositório de Serviços. Só o que depende do
- * PostgreSQL (fora do escopo do UC03 nesta etapa) é trocado:
- * - os dois tokens de repositório TypeORM, lidos apenas pelas fábricas dos
- *   adaptadores TypeORM, que este fluxo não usa;
- * - a porta de perfis (UC02), pela implementação em memória que cumpre a
- *   mesma suíte de contrato do adaptador TypeORM.
+ * PostgreSQL é trocado, para este nível continuar sem banco:
+ * - os três tokens de repositório TypeORM, lidos apenas pelas fábricas dos
+ *   adaptadores TypeORM, que este teste não usa;
+ * - a porta de perfis (UC02) e, desde a #37, a de Serviços, pelas
+ *   implementações em memória que cumprem as mesmas suítes de contrato dos
+ *   adaptadores TypeORM. O nível com PostgreSQL real está em
+ *   test/integracao/servicos.typeorm.spec.ts e test/e2e/servicos.e2e-spec.ts.
  */
 describe('POST /servicos — integração do backend (OfertaModule real, sem banco)', () => {
   let app: INestApplication<App>;
@@ -51,8 +54,12 @@ describe('POST /servicos — integração do backend (OfertaModule real, sem ban
       .useValue({})
       .overrideProvider(getRepositoryToken(UsuarioOrmEntity))
       .useValue({})
+      .overrideProvider(getRepositoryToken(ServicoOrmEntity))
+      .useValue({})
       .overrideProvider(PERFIS_ESPECIALISTA_REPOSITORIO)
       .useValue(perfis)
+      .overrideProvider(SERVICOS_REPOSITORIO)
+      .useValue(new ServicosEmMemoria())
       .compile();
 
     app = modulo.createNestApplication<INestApplication<App>>();

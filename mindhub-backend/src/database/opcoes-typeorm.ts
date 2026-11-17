@@ -2,9 +2,14 @@ import type { DataSourceOptions } from 'typeorm';
 import type { AmbienteDoBanco } from '../config/ambiente.js';
 import { UsuarioOrmEntity } from '../identidade/infra/usuario.orm-entity.js';
 import { PerfilEspecialistaOrmEntity } from '../oferta/infra/perfil-especialista.orm-entity.js';
+import { ServicoOrmEntity } from '../oferta/infra/servico.orm-entity.js';
 import { MIGRACOES } from './migracoes.js';
 
-export const ENTIDADES_ORM = [UsuarioOrmEntity, PerfilEspecialistaOrmEntity];
+export const ENTIDADES_ORM = [
+  UsuarioOrmEntity,
+  PerfilEspecialistaOrmEntity,
+  ServicoOrmEntity,
+];
 
 export type OpcoesPostgres = Extract<DataSourceOptions, { type: 'postgres' }>;
 
