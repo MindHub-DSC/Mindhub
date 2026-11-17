@@ -25,7 +25,20 @@ describe('Servico.publicar', () => {
     expect(servico.id).toMatch(UUID);
     expect(servico.perfilId).toBe(perfilId);
     expect(servico.titulo).toBe('Mentoria de produto');
+    expect(servico.descricao).toBe('Sessões de discovery para times iniciantes');
     expect(servico.modeloContratacao).toBe('SOB_PROPOSTA');
     expect(servico.situacao).toBe('PUBLICADO');
+  });
+
+  it('gera identidades diferentes a cada publicação', () => {
+    const dados = {
+      perfilId: randomUUID(),
+      titulo: 'Mentoria de produto',
+      descricao: 'Sessões de discovery para times iniciantes',
+      modeloContratacao: 'SOB_PROPOSTA' as const,
+      agora,
+    };
+
+    expect(Servico.publicar(dados).id).not.toBe(Servico.publicar(dados).id);
   });
 });
