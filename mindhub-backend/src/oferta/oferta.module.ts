@@ -20,7 +20,8 @@ import { PerfisEspecialistaController } from './http/perfis-especialista.control
 import { ServicosController } from './http/servicos.controller.js';
 import { PerfilEspecialistaOrmEntity } from './infra/perfil-especialista.orm-entity.js';
 import { PerfisEspecialistaTypeOrmRepositorio } from './infra/perfis-especialista.typeorm-repositorio.js';
-import { ServicosEmMemoria } from './infra/servicos.em-memoria.js';
+import { ServicoOrmEntity } from './infra/servico.orm-entity.js';
+import { ServicosTypeOrmRepositorio } from './infra/servicos.typeorm-repositorio.js';
 
 /**
  * C2 — Oferta Profissional.
@@ -30,7 +31,7 @@ import { ServicosEmMemoria } from './infra/servicos.em-memoria.js';
 @Module({
   imports: [
     IdentidadeModule,
-    TypeOrmModule.forFeature([PerfilEspecialistaOrmEntity]),
+    TypeOrmModule.forFeature([PerfilEspecialistaOrmEntity, ServicoOrmEntity]),
   ],
   controllers: [PerfisEspecialistaController, ServicosController],
   providers: [
@@ -48,9 +49,14 @@ import { ServicosEmMemoria } from './infra/servicos.em-memoria.js';
       ) => new CadastrarPerfilEspecialista(reconhecimento, perfis),
       inject: [RECONHECIMENTO_DE_USUARIO, PERFIS_ESPECIALISTA_REPOSITORIO],
     },
-    // Provisório até a #37 (TypeORM): os Serviços ficam em memória e se
-    // perdem ao reiniciar. Troca-se só esta linha; o contrato é o mesmo.
-    { provide: SERVICOS_REPOSITORIO, useClass: ServicosEmMemoria },
+    // #37: Serviços no PostgreSQL. ServicosEmMemoria continua disponível
+    // para os testes sem banco, que sobrescrevem este provider.
+    {
+      provide: SERVICOS_REPOSITORIO,
+      useFactory: (orm: Repository<ServicoOrmEntity>) =>
+        new ServicosTypeOrmRepositorio(orm),
+      inject: [getRepositoryToken(ServicoOrmEntity)],
+    },
     {
       provide: PublicarServico,
       useFactory: (
