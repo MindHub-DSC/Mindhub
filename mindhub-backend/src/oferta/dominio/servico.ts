@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { ServicoInvalido } from './erros.js';
+import { CondicoesVigentesAusentes, ServicoInvalido } from './erros.js';
 
 /** Como o Serviço é contratado (UC03). */
 export const ModeloContratacao = {
@@ -42,6 +42,7 @@ export class Servico {
     private readonly _descricao: string,
     private readonly _modeloContratacao: ModeloContratacao,
     private readonly _situacao: SituacaoServico,
+    private readonly _condicoes: CondicoesVigentes | null,
   ) {}
 
   /**
@@ -56,13 +57,15 @@ export class Servico {
     condicoes?: CondicoesVigentes;
     agora: Date;
   }): Servico {
+    const modelo = exigirModelo(dados.modeloContratacao);
     return new Servico(
       randomUUID(),
       dados.perfilId,
       dados.titulo,
       dados.descricao,
-      exigirModelo(dados.modeloContratacao),
+      modelo,
       'PUBLICADO',
+      condicoesPara(modelo, dados.condicoes),
     );
   }
 
@@ -90,10 +93,24 @@ export class Servico {
     return this._situacao;
   }
 
-  /** Contrato do critério 3 da #36; ainda sem implementação (RED). */
+  /** Cópia das condições vigentes, ou null quando não há (Sob Proposta). */
   get condicoes(): CondicoesVigentes | null {
+    return this._condicoes ? { ...this._condicoes } : null;
+  }
+}
+
+/** Critério 3 da #36: Reserva Direta exige condições vigentes (D-UC03-02). */
+function condicoesPara(
+  modelo: ModeloContratacao,
+  condicoes: CondicoesVigentes | undefined,
+): CondicoesVigentes | null {
+  if (condicoes === undefined || condicoes === null) {
+    if (modelo === ModeloContratacao.RESERVA_DIRETA) {
+      throw new CondicoesVigentesAusentes();
+    }
     return null;
   }
+  return { ...condicoes };
 }
 
 /** Critério 2 da #36: só Reserva Direta ou Sob Proposta. */
