@@ -10,7 +10,7 @@ import {
 } from '../../../src/oferta/dominio/erros.js';
 import { PerfilEspecialista } from '../../../src/oferta/dominio/perfil-especialista.js';
 import { PerfisEspecialistaEmMemoria } from '../../support/perfis-especialista.em-memoria.js';
-import { ServicosEmMemoria } from '../../support/servicos.em-memoria.js';
+import { ServicosEmMemoria } from '../../../src/oferta/infra/servicos.em-memoria.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const agora = new Date('2026-11-17T12:00:00.000Z');

@@ -1,11 +1,10 @@
-import {
-  Servico,
-  type DadosDoServico,
-} from '../../src/oferta/dominio/servico.js';
-import type { ServicosRepositorio } from '../../src/oferta/dominio/servicos.repositorio.js';
+import { Servico, type DadosDoServico } from '../dominio/servico.js';
+import type { ServicosRepositorio } from '../dominio/servicos.repositorio.js';
 
 /**
- * Implementação em memória da porta ServicosRepositorio, só para testes.
+ * Implementação em memória da porta ServicosRepositorio.
+ * Usada nos testes e, provisoriamente, pela aplicação até existir a
+ * persistência TypeORM (#37): os registros se perdem ao reiniciar.
  * Guarda dados copiados, nunca a referência do objeto recebido, e devolve
  * Serviços reconstituídos a cada leitura (cópias defensivas).
  */
