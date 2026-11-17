@@ -38,6 +38,7 @@ export interface DadosDoServico {
   modeloContratacao: string;
   situacao: string;
   condicoes: CondicoesVigentes | null;
+  publicadoEm: Date;
 }
 
 /**
@@ -112,6 +113,7 @@ export class Servico {
       modeloContratacao: this._modeloContratacao,
       situacao: this._situacao,
       condicoes: this.condicoes,
+      publicadoEm: this.publicadoEm,
     };
   }
 
@@ -137,6 +139,11 @@ export class Servico {
 
   get situacao(): SituacaoServico {
     return this._situacao;
+  }
+
+  /** Contrato da decisão A2 (17/11/2026); ainda sem implementação (RED). */
+  get publicadoEm(): Date {
+    return new Date(0);
   }
 
   /** Cópia das condições vigentes, ou null quando não há (Sob Proposta). */
