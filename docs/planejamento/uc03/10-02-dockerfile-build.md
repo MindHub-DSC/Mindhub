@@ -122,3 +122,18 @@ Os scripts atuais `migration:show`/`migration:run` executam `pnpm run build` ant
 
 - Criar o `.dockerignore` e construir a imagem (Fase 4).
 - Scripts de migration para o runtime compilado (Fase 7).
+
+## 9. Atualização posterior (Dockerfile final)
+
+O Dockerfile da seção 4 é a **primeira versão**. Na Fase 7 (`10-06`, diagnóstico `ERR_PNPM_PACKAGE_MANAGER_REMOVE_MODULES_DIR`) o estágio `runtime` ganhou duas linhas, e o arquivo commitado em `19cd672` as contém:
+
+```dockerfile
+ENV pnpm_config_verify_deps_before_run=false
+ENV pnpm_config_update_notifier=false
+```
+
+Motivo: a imagem é imutável; `pnpm <script>` não deve reinstalar dependências (o `storeDir` gravado é o do root e o processo roda como `node`) nem consultar atualizações na rede. O restante do Dockerfile é o da seção 4.
+
+| Verificação | Situação |
+| --- | --- |
+| Dockerfile construído e funcional | Confirmado [EXE]: `docker build` (`10-03`) e execução com HTTP + durabilidade (`10-07`); revalidado em 24/11/2026 (`10-07`, seção 12) |

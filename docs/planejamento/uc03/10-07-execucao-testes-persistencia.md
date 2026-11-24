@@ -232,3 +232,19 @@ Uma suíte aprovada **não** substitui a prova do ambiente Docker: os testes rod
 ## 11. Conclusão
 
 Ambiente containerizado funcional e comprovado, sem regressões. Nenhuma falha de teste a diagnosticar.
+
+## 12. Revalidação independente (24/11/2026)
+
+Repetida a partir da ponta de `feature/141-uc03-containerizar-backend` (`19cd672`), em um worktree limpo, com Docker sem contêineres nem volume (ambiente novo; `.env` gerado de `.env.example` com senha aleatória, não versionado). Senhas não impressas.
+
+| Etapa | Resultado [EXE] |
+| --- | --- |
+| `docker compose config --quiet` | `OK` |
+| `docker compose up -d --build api` | Imagem construída; volume e rede criados; `postgres` `healthy` antes da API; `Nest application successfully started`; `Mapped {/servicos, POST}` |
+| `migration:show:prod` (banco novo) | `[ ]` nas 2 migrations (pendentes, pois o volume era novo) |
+| `migration:run:prod` | As 2 migrations aplicadas; `show` depois: `[X]` nas duas |
+| `POST /usuarios`, `POST /especialistas`, `POST /servicos` | 201 nos três; Serviço `883a3438-86fc-4a87-8444-1d171e543de6` (`PUBLICADO`) |
+| Corpo inválido em `POST /servicos` | 400 |
+| SQL antes e depois de `docker compose restart api` | `diff` vazio; `postgres` não reiniciado |
+
+Conclusão: build, Compose, migrations compiladas, HTTP e durabilidade reproduzidos em ambiente limpo. `pnpm test` e `pnpm test:e2e` **não** foram reexecutados nesta revalidação; valem os números da seção 8 (17/11/2026).
