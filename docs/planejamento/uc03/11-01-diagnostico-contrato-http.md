@@ -92,4 +92,4 @@ X-Powered-By: Express · Content-Length: 273 · ETag: W/"111-…"
 
 ## 8. Pendências
 
-Token do `gh` sem escopo `project` de escrita (ver `11-08`). Nenhum merge executado.
+Project: #144 movida para `In Review` (ver `11-08`). Nenhum merge executado.

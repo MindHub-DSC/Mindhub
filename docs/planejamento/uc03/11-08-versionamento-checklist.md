@@ -102,7 +102,18 @@ Arquivos adicionados por caminho (sem `git add .`); `.env` ignorado e não versi
 
 ## 19. GitHub Project
 
-A #144 foi incluída no Project automaticamente (sem status). A mudança para `In Progress` **não foi possível**: o token do `gh` tem `read:project`, sem o escopo `project` de escrita (`error: your authentication token is missing required scopes [project]`). **Pendente:** mover o card da #144 para `In Progress` (ou `In Review`, pois o PR #145 já existe) depois de `gh auth refresh -h github.com -s project`. Nada foi movido para `Done`.
+A #144 entrou no Project automaticamente, sem status. A primeira tentativa de movê-la falhou (`your authentication token is missing required scopes [project]`: o token tinha só `read:project`). @leohsm ampliou o token (`gh auth refresh -h github.com -s project`) e a operação foi refeita:
+
+```text
+$ gh project item-edit … --single-select-option-id <In Review>   (#144)
+$ gh issue view 144 --json projectItems
+Planejamento - Mindhub=In Review
+
+$ gh project item-list 1 --owner MindHub-DSC   (itens em Done)
+(nenhum)
+```
+
+A #144 está em **`In Review`** (PR #145 aguarda revisão humana); fluxo `Backlog → Ready → In Progress → In Review → Done` preservado e nada foi para `Done`.
 
 ## 20. Checklist
 
@@ -113,7 +124,7 @@ A #144 foi incluída no Project automaticamente (sem status). A mudança para `I
 | Oito Markdown do Material 10 analisados | Confirmado | Lidos da branch `docs/material-10-uc03` (PR #143, aberto) |
 | Contrato anterior recuperado | Confirmado | `11-01`, seção 5 |
 | Controller, DTO de entrada e Service inspecionados e preservados | Confirmado | `11-01`, seção 3; só o mapper mudou |
-| Issue identificada; DoR, WIP e branch-base verificados | Confirmado | #144; `11-01`, seção 2. WIP: ver Project (Pendente) |
+| Issue identificada; DoR, WIP e branch-base verificados | Confirmado | #144; `11-01`, seção 2; Project (seção 19) |
 
 ### Contrato público
 
@@ -174,14 +185,14 @@ A #144 foi incluída no Project automaticamente (sem status). A mudança para `I
 | Alterações inspecionadas; segredos não versionados | Confirmado | `.env` ignorado |
 | Commits reais; PR criado | Confirmado | `7900d91`, `472cdac`; PR #145 |
 | Evidências registradas | Confirmado | PR #145 e estes artefatos |
-| GitHub Project atualizado | **Pendente** | Token sem escopo `project` (seção 19) |
+| GitHub Project atualizado | Confirmado | #144 em `In Review` (seção 19) |
 | Nenhum merge prematuro | Confirmado | Nenhum PR integrado |
 
-**Resumo:** 31 itens, 30 confirmados e 1 pendente (Project).
+**Resumo:** 31 itens, 31 confirmados.
 
 ## 21. Pendências
 
-1. Mover o card da #144 no Project (exige `gh auth refresh -s project`).
+1. (Resolvida) Card da #144 movido para `In Review`.
 2. Revisão humana e integração em ordem: #131 → #134 → #135 → #139 → #142 → #145; o PR de documentação vai direto à `main`.
 3. Marcar os critérios da #144 depois da revisão do #145.
 4. O PR #143 (documentação do Material 10) segue aberto.
