@@ -247,4 +247,22 @@ Repetida a partir da ponta de `feature/141-uc03-containerizar-backend` (`19cd672
 | Corpo inválido em `POST /servicos` | 400 |
 | SQL antes e depois de `docker compose restart api` | `diff` vazio; `postgres` não reiniciado |
 
-Conclusão: build, Compose, migrations compiladas, HTTP e durabilidade reproduzidos em ambiente limpo. `pnpm test` e `pnpm test:e2e` **não** foram reexecutados nesta revalidação; valem os números da seção 8 (17/11/2026).
+Conclusão: build, Compose, migrations compiladas, HTTP e durabilidade reproduzidos em ambiente limpo. `pnpm test` e `pnpm test:e2e` foram reexecutados na verificação da seção 13 (110 e 35).
+
+## 13. Verificação pelo guia pós-atividade (24/11/2026)
+
+Executado o `docs/prompts/10-guia-verificacao-pos-atividade.md` na ponta de `feature/141-uc03-containerizar-backend` (`19cd672`, worktree em HEAD destacado), com o ambiente da seção 12. Senhas não impressas.
+
+| Seção do guia | Resultado [EXE] |
+| --- | --- |
+| 1. Pré-requisitos | `.env` ignorado (`git check-ignore .env` → `.env`); chaves iguais às do `.env.example`; Docker 29.9.3, Compose v5.7.1. `COMPOSE_PROJECT_NAME` não definido de propósito: o `compose.yaml` fixa `name: mindhub` (`10-04`) |
+| 2. Compose e imagem | `config --quiet` → `OK`; `docker compose build api` concluído; `mindhub-api:dev` listada |
+| 3. Subir | `postgres` `healthy`, `api` `Up`; logs com `Mapped {/servicos, POST}` e `Nest application successfully started`; 0 linhas com `error` |
+| 4. Migrations | `migration:show:prod` → `[X]` nas 2; `run` não executado |
+| 5. HTTP | `POST /servicos` válido → 201 (`6e66a44a-6b03-48bf-9359-b03a3ae01634`); corpo sem campos obrigatórios → 400; campo extra → **400** `Unrecognized key: "campoExtra"` (o projeto usa `z.strictObject`: rejeita em vez de descartar, ver seção 6 do `10-07`) |
+| 6. SQL e durabilidade | Mesma linha antes e depois de `docker compose restart api`; `diff` vazio |
+| 7. Testes | `pnpm test` 12 arquivos / **110** testes; `pnpm test:e2e` 6 arquivos / **35** testes. Sem `node`/`pnpm` no host desta máquina: rodados em contêiner `node:24.19.0-bookworm-slim` na rede `mindhub_default` (`DB_HOST=postgres`, `DB_PORT=5432`), com `node_modules` em volume anônimo |
+| 7. Banco de testes | `mindhub_test` criado pelo `global-setup` no serviço `postgres`; `docker ps` → `mindhub-postgres-1 … project=mindhub`; banco de desenvolvimento seguiu com 2 linhas em `oferta.servicos` (testes não o tocaram) |
+| 8. Checklist do PR | `git status` limpo; lockfile não reescrito; sem `.env` nem senha no diff |
+
+Os números (110 e 35) são iguais aos da linha de base (`10-01`) e da seção 8, agora obtidos de novo. Não houve regressões.
