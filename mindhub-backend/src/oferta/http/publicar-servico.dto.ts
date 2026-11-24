@@ -43,15 +43,26 @@ export interface ServicoResponse {
   situacao: string;
 }
 
-/** Representação HTTP do Serviço; a entidade de domínio não é exposta direto. */
+/**
+ * Representação HTTP do Serviço; a entidade de domínio não é exposta direto.
+ * Cada campo público é copiado explicitamente, inclusive os de "condicoes"
+ * (#144): devolver o objeto do domínio por referência exporia qualquer
+ * propriedade a mais que ele venha a ter.
+ */
 export function paraResposta(servico: Servico): ServicoResponse {
+  const condicoes = servico.condicoes;
   return {
     id: servico.id,
     perfilId: servico.perfilId,
     titulo: servico.titulo,
     descricao: servico.descricao,
     modeloContratacao: servico.modeloContratacao,
-    condicoes: servico.condicoes,
+    condicoes: condicoes && {
+      preco: condicoes.preco,
+      moeda: condicoes.moeda,
+      duracaoMinutos: condicoes.duracaoMinutos,
+      modalidade: condicoes.modalidade,
+    },
     situacao: servico.situacao,
   };
 }
