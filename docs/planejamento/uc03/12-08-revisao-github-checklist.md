@@ -22,7 +22,7 @@ Não há branch de código (nada foi alterado). Branch documental: `docs/materia
 
 ```text
 main ─ #131 → #134 → #135 → #139 → #142 (containerização) → #145 (contrato HTTP)   (todos Draft, nenhum integrado)
-main ─ docs: #143 (Material 10) · #146 (Material 11) · PRDOCS (Material 12)           (abertos)
+main ─ docs: #143 (Material 10) · #146 (Material 11) · [#148](https://github.com/MindHub-DSC/Mindhub/pull/148) (Material 12)           (abertos)
 ```
 
 ## 5. Estado anterior
@@ -55,7 +55,7 @@ AD-01 preservar; AD-02 corrigir comentários desatualizados na #41; AD-03 não u
 
 ## 12. PR ou parecer
 
-Não há PR de código: o resultado é este **parecer técnico**. Os artefatos são versionados no PR documental PRDOCS (`docs/material-12-uc03` → `main`), como nos Materiais anteriores.
+Não há PR de código: o resultado é este **parecer técnico**. Os artefatos são versionados no PR documental [#148](https://github.com/MindHub-DSC/Mindhub/pull/148) (`docs/material-12-uc03` → `main`), como nos Materiais anteriores.
 
 ## 13. Revisão técnica
 
@@ -128,7 +128,7 @@ Os checkboxes da Issue **não** foram marcados antes da revisão.
 ## 17. Pendências
 
 1. Revisão humana do parecer e marcação dos critérios da #147.
-2. Integração dos PRs na ordem #131 → #134 → #135 → #139 → #142 → #145; PRs de documentação #143, #146 e PRDOCS direto na `main`.
+2. Integração dos PRs na ordem #131 → #134 → #135 → #139 → #142 → #145; PRs de documentação #143, #146 e [#148](https://github.com/MindHub-DSC/Mindhub/pull/148) direto na `main`.
 3. Dívidas A1 e A6 (tratar na #41).
 
 ## 18. Próximas ações
