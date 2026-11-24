@@ -92,6 +92,73 @@ describe('POST /servicos (fronteira HTTP, serviço simulado)', () => {
     });
   });
 
+  // Contrato público (#144): a resposta é fechada, mesmo que o objeto devolvido
+  // pelo serviço de aplicação tenha propriedades a mais. As propriedades extras
+  // abaixo existem só neste objeto simulado (nada disso está no domínio real).
+  it('não expõe propriedades internas do Serviço nem das condições', async () => {
+    const id = randomUUID();
+    const perfilId = randomUUID();
+    publicarServico.executar.mockResolvedValue({
+      id,
+      perfilId,
+      titulo: 'Mentoria de produto',
+      descricao: 'Sessões de discovery',
+      modeloContratacao: 'RESERVA_DIRETA',
+      situacao: 'PUBLICADO',
+      publicadoEm: new Date(),
+      notaInterna: 'informacao-interna-ilustrativa',
+      condicoes: {
+        ...corpoValido.condicoes,
+        referenciaInterna: 'condicao-interna-ilustrativa',
+      },
+    });
+
+    const resposta = await publicar(corpoValido).expect(201);
+
+    expect(resposta.body).not.toHaveProperty('notaInterna');
+    expect(resposta.body).not.toHaveProperty('publicadoEm');
+    expect(resposta.body.condicoes).not.toHaveProperty('referenciaInterna');
+    expect(resposta.body).toEqual({
+      id,
+      perfilId,
+      titulo: 'Mentoria de produto',
+      descricao: 'Sessões de discovery',
+      modeloContratacao: 'RESERVA_DIRETA',
+      condicoes: corpoValido.condicoes,
+      situacao: 'PUBLICADO',
+    });
+  });
+
+  it('Sob Proposta: devolve "condicoes" como null, sem omitir o campo', async () => {
+    const servico = Servico.publicar({
+      perfilId: randomUUID(),
+      titulo: 'Consultoria sob medida',
+      descricao: 'Orçamento por proposta',
+      modeloContratacao: 'SOB_PROPOSTA',
+      agora: new Date(),
+    });
+    publicarServico.executar.mockResolvedValue(servico);
+
+    const resposta = await publicar({
+      usuarioId,
+      titulo: 'Consultoria sob medida',
+      descricao: 'Orçamento por proposta',
+      modeloContratacao: 'SOB_PROPOSTA',
+    })
+      .expect(201)
+      .expect('Content-Type', /application\/json/);
+
+    expect(resposta.body).toEqual({
+      id: servico.id,
+      perfilId: servico.perfilId,
+      titulo: 'Consultoria sob medida',
+      descricao: 'Orçamento por proposta',
+      modeloContratacao: 'SOB_PROPOSTA',
+      condicoes: null,
+      situacao: 'PUBLICADO',
+    });
+  });
+
   // Teste 2 (Refinamento 3) — critério 2 da #40 (FE-01).
   it.each([
     ['campo não previsto', { ...corpoValido, situacao: 'PUBLICADO' }],
